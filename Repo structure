@@ -1,0 +1,64 @@
+/ (root)
+├─ .github/
+│  └─ workflows/ci.yml
+├─ frontend/
+│  ├─ package.json
+│  ├─ tsconfig.json
+│  ├─ tailwind.config.js
+│  ├─ postcss.config.js
+│  └─ src/
+│     ├─ index.tsx
+│     ├─ App.tsx
+│     ├─ main.css
+│     ├─ core/
+│     │  ├─ domain/
+│     │  │  └─ types.ts
+│     │  ├─ application/
+│     │  │  └─ usecases.ts
+│     │  └─ ports/
+│     │     └─ routesPort.ts
+│     ├─ adapters/
+│     │  ├─ ui/
+│     │  │  ├─ components/
+│     │  │  │  ├─ RoutesTab.tsx
+│     │  │  │  ├─ CompareTab.tsx
+│     │  │  │  ├─ BankingTab.tsx
+│     │  │  │  └─ PoolingTab.tsx
+│     │  │  └─ hooks/
+│     │  │     └─ useRoutes.ts
+│     │  └─ infrastructure/
+│     │     └─ apiClient.ts
+│     └─ shared/
+│        └─ utils.ts
+├─ backend/
+│  ├─ package.json
+│  ├─ tsconfig.json
+│  ├─ prisma/
+│  │  ├─ schema.prisma
+│  │  └─ seed.ts
+│  └─ src/
+│     ├─ index.ts
+│     ├─ server.ts
+│     ├─ core/
+│     │  ├─ domain/
+│     │  │  ├─ entities.ts
+│     │  │  └─ valueObjects.ts
+│     │  ├─ application/
+│     │  │  ├─ computeCB.ts
+│     │  │  ├─ computeComparison.ts
+│     │  │  ├─ banking.ts
+│     │  │  └─ pooling.ts
+│     │  └─ ports/
+│     │     └─ routesRepo.ts
+│     ├─ adapters/
+│     │  ├─ inbound/
+│     │  │  └─ http/
+│     │  │     └─ routesController.ts
+│     │  └─ outbound/
+│     │     └─ postgres/
+│     │        └─ routesRepoImpl.ts
+│     └─ infrastructure/
+│        └─ dbClient.ts
+├─ AGENT_WORKFLOW.md
+├─ README.md
+└─ REFLECTION.md
