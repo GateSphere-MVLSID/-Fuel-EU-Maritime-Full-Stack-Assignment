@@ -1,0 +1,43 @@
+src/adapters/inbound/http/routesController.ts
+import express from 'express';
+import {computeComplianceBalance, computeCBTonnes} from '../../../core/application/computeCB';
+import {allocatePool} from '../../../core/application/pooling';
+
+const router = express.Router();
+
+router.get('/routes', async (req,res)=>{
+  // wire to repo in real implementation
+  const rows = req.app.locals.repos.routes.findAll();
+  res.json(rows);
+});
+
+router.post('/routes/:id/baseline', async (req,res)=>{
+  const id = req.params.id;
+  await req.app.locals.repos.routes.setBaseline(id);
+  res.json({ok:true});
+});
+
+router.get('/routes/comparison', async (req,res)=>{
+  const rows = await req.app.locals.repos.routes.findAll();
+  const baseline = rows.find(r=> r.isBaseline);
+  if(!baseline) return res.status(400).json({error:'no baseline'});
+  const out = rows.filter(r=> r.id!==baseline.id).map(r=>({
+    routeId:r.routeId,
+    baseline: baseline.ghgIntensity,
+    comparison: r.ghgIntensity,
+    percentDiff: ((r.ghgIntensity / baseline.ghgIntensity) - 1) * 100,
+    compliant: r.ghgIntensity <= TARGET_INTENSITY
+  }));
+  res.json(out);
+});
+
+router.post('/pools', async (req,res)=>{
+  const members = req.body.members; // [{shipId, cb}]
+  // server-side validate
+  const sum = members.reduce((s,m)=> s + m.cb, 0);
+  if(sum < 0) return res.status(400).json({error:'sum negative'});
+  const allocated = allocatePool(members);
+  res.json({allocated});
+});
+
+export default router;
