@@ -1,0 +1,72 @@
+# AI Agent Workflow Log
+
+## Agents Used
+- GitHub Copilot (VS Code inline)
+- Claude (Claude Code) — used for refactoring algorithms and tests
+- GitHub Copilot Chat — small prompts for Tailwind UI bits
+- Local unit-test runner (node + jest) with Copilot-assisted test scaffolding
+
+## Prompts & Outputs
+
+### Example 1 — CB compute function
+**Prompt given to agent**:
+Implement a TypeScript function computeComplianceBalance(targetIntensity: number, actualIntensity: number, fuelTons: number): number Using energy density 41000 MJ/t and formula CB = (target - actual) * energy Return CB in gCO2e (not normalized)
+**Generated snippet**:
+```ts
+export function computeComplianceBalance(targetIntensity:number, actualIntensity:number, fuelTons:number){
+  const energy = fuelTons * 41000;
+  return (targetIntensity - actualIntensity) * energy;
+}
+Example 2 — Pooling greedy allocation
+Prompt:
+Write a TypeScript function allocatePool(members: {shipId:string, cb:number}[]): {shipId:string, cbAfter:number}[] that sorts by cb desc and transfers surplus to deficits greedily while ensuring no surplus becomes negative and deficits do not get worse than before.
+Agent output: produced initial algorithm; I corrected edge cases (floating point precision, preserving integer gCO2eq units) and added tests.
+Validation / Corrections
+•	Verified CB numbers by hand for sample rows (R001..R005) and wrote unit tests.
+•	Fixed agent’s off-by-sign error in one suggestion (agent sometimes suggested actual - target).
+•	Added boundaries and validation (no over-apply bank) after running tests.
+Observations
+•	Agents saved boilerplate time (file headers, function skeletons, small React components)
+•	Agents hallucinated on regulatory nuance — always validated against formulas in the spec PDF
+•	Best combined: Copilot for quick UI/TSX, Claude for reasoning/refactoring of algorithms and test generation
+Best Practices Followed
+•	Small isolated prompts per function
+•	Always write tests immediately after agent-generated logic
+•	Use agents for suggestions, not authoritative correctness
+
+REFLECTION.md
+# Reflection — AI Agent Assisted Development
+
+(≈ 1 page)
+
+Using AI agents shortened scaffolding time significantly: Copilot generated repetitive code structures, types and simple component layouts, while Claude Code helped to refactor the pooling algorithm and generate tests which caught edge cases.
+
+Efficiency gains vs manual coding:
+- ~40% faster to scaffold files and initial endpoints
+- Unit tests generation accelerated validation
+
+Improvements next time:
+- Provide more structured prompts with test-first approach to avoid hallucinations
+- Use smaller, verifiable pieces of code for agents to reduce correction
+
+### `README.md` (top-level summary)
+
+```markdown
+# Fuel EU Maritime — Compliance Module (Scaffold)
+
+This repo contains a frontend (React + TypeScript + Tailwind) and backend (Node.js + TypeScript + Prisma/Postgres) scaffold implementing the Fuel EU compliance dashboard and APIs.
+
+## Quick start
+
+### Backend
+```bash
+cd backend
+npm install
+# set DATABASE_URL in .env to your Postgres (or use sqlite for quick dev)
+npm run migrate:dev  # prisma migrate
+npm run seed
+npm run dev
+Frontend
+cd frontend
+npm install
+npm run dev
