@@ -1,0 +1,51 @@
+src/core/application/computeCB.ts
+export const ENERGY_MJ_PER_TON = 41000;
+export const TARGET_INTENSITY = 89.3368; // gCO2e/MJ
+
+export function computeComplianceBalance(target: number, actual: number, fuelTons: number){
+  const energy = fuelTons * ENERGY_MJ_PER_TON;
+  // CB in gCO2e
+  return (target - actual) * energy;
+}
+
+// example wrapper to compute and normalize to tonnes CO2e if needed
+export function computeCBTonnes(target:number, actual:number, fuelTons:number){
+  const g = computeComplianceBalance(target, actual, fuelTons);
+  return g / 1e6; // convert g -> tonnes
+}
+src/core/application/computeComparison.ts
+export function percentDiff(comparison:number, baseline:number){
+  if(baseline === 0) return null;
+  return ((comparison / baseline) - 1) * 100;
+}
+
+export function isCompliant(value:number, target:number=TARGET_INTENSITY){
+  return value <= target;
+}
+src/core/application/pooling.ts
+type Member = {shipId:string, cb:number}
+
+export function allocatePool(members:Member[]){
+  // Copy and sort descending by cb (surplus first)
+  const sorted = [...members].sort((a,b)=> b.cb - a.cb);
+  const result: Record<string, number> = {};
+  sorted.forEach(m=> result[m.shipId]=m.cb);
+
+  // Greedy: iterate surplus -> distribute to deficits
+  for(let i=0;i<sorted.length;i++){
+    const m = sorted[i];
+    if(result[m.shipId] <= 0) continue; // not a surplus
+    let surplus = result[m.shipId];
+    for(let j=sorted.length-1;j>=0 && surplus>0;j--){
+      const def = sorted[j];
+      if(result[def.shipId] >= 0) continue;
+      const need = Math.abs(result[def.shipId]);
+      const transfer = Math.min(need, surplus);
+      result[def.shipId] += transfer; // less negative
+      surplus -= transfer;
+      result[m.shipId] -= transfer;
+    }
+  }
+
+  return Object.keys(result).map(shipId=> ({shipId, cbAfter: result[shipId]}));
+}
